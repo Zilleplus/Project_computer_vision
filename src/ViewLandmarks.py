@@ -1,14 +1,19 @@
 # view the landmarks onto the pictures
 
+# used libs
 import cv2
 import cv2.cv as cv
 import numpy as n
+
+# self made libs
 import readData as rd
 import Teeth as th
+import ActiveShapeModel as asm
 
 import LandMarkSet as lms
 demo1=False
-demo2=True
+demo2=False
+demo3=True
 
 if demo1==True:
     test = lms.LandmarkSet(1)
@@ -48,4 +53,14 @@ if demo2==True:
         cv2.imshow('small',small)
         cv2.waitKey(0)
 
+if demo3==True:
+    listWithLandmarks = [];
+    #read out the first 10 landmarks
+    for i in range(1,10):
+        listWithLandmarks.append(lms.LandmarkSet(i))
+
+    # construct a teeth model
+    t = th.Teeth(1,listWithLandmarks)
+
+    model = t.PCA()
 cv2.destroyAllWindows()

@@ -1,7 +1,12 @@
 import numpy as np
+import numpy.linalg as npla
 import scipy as sp
 import scipy.spatial as sps
 import numpy.linalg as npl
+import ActiveShapeModel as asm
+
+import cv2
+import cv2.cv as cv
 
 class Teeth:
     numberOfPointsLandmark = 40
@@ -38,8 +43,6 @@ class Teeth:
                         self.procrustes_data[0:self.numberOfPointsLandmark,0] = mtx1[:,0]
                         self.procrustes_data[self.numberOfPointsLandmark:2*self.numberOfPointsLandmark,0] = mtx1[:,1]
 
-        print self.procrustes_data[0:20,0:4]
-
     # return the normalized coordinates times 1000, usefull for debugging
     def getNormalizedCoordinatesModelIndividualTeeth(self,rankLandmark,rankCoordinates):
         return (
@@ -47,13 +50,37 @@ class Teeth:
                    ,int(self.procrustes_data[rankCoordinates+self.numberOfPointsLandmark,rankLandmark]*1000+500)
                 )
 
+    def PCA(self):
+        # calculate the mean
+        mean = np.zeros((80,1))
+        for rankLandmark in range(0,self.numberOfLandmarks):
+            mean[:,0] = mean[:,0] + (self.procrustes_data[:,rankLandmark] / 2)
+
+        # execute the PCA analysis
+        #(mean , eigenvectors) = cv2.PCACompute(np.transpose(self.procrustes_data))
+
+        A = np.dot(   np.transpose(self.procrustes_data - mean) ,self.procrustes_data - mean  )
+        [length_col_A,length_row_A] = A.shape
+
+        [eigenvalues , smallEigenvectors ]=  npla.eig(A)
+        eigenvectors =  np.dot( self.procrustes_data ,smallEigenvectors)
+
+        # normalize the eigenvectors
+        for i in range(0,length_row_A):
+            eigenvectors[:,i] = eigenvectors[:,i] / np.linalg.norm(eigenvectors[:,i])
+
+        [~ numberOfEigenvectors] = np.shape(eigenvectors)
+
+        # construct the final model
+        return asm.ActiveShapeModel(mean,eigenvectors,eigenvalues)
+
     def __init__(self,rankLandmark,listWithLandmarks):
-            self.rankLandmark = rankLandmark
-            self.numberOfLandmarks = len(listWithLandmarks)
+        self.rankLandmark = rankLandmark
+        self.numberOfLandmarks = len(listWithLandmarks)
 
-            self.data = np.zeros((80,self.numberOfLandmarks))
+        self.data = np.zeros((80,self.numberOfLandmarks))
 
-            for i in range(0,self.numberOfLandmarks):
-                self.data[:,i] = listWithLandmarks[i].getDataSet(self.rankLandmark)
+        for i in range(0,self.numberOfLandmarks):
+            self.data[:,i] = listWithLandmarks[i].getDataSet(self.rankLandmark)
 
-            self.procus()
+        self.procus()
