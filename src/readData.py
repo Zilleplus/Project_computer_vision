@@ -15,7 +15,7 @@ def ReadLandmarksFromFiles(idLandMarkSetData):
         # open the text file with one collum of data
 
         # select the right folder
-        if(idLandMarkSetData>15):
+        if(idLandMarkSetData>14):
             pathOfXYLandmarks = pathOfYLandmarks
         else:
             pathOfXYLandmarks = pathOfXLandmarks
@@ -28,6 +28,7 @@ def ReadLandmarksFromFiles(idLandMarkSetData):
         # read out the numbers in the text file
         listWithNumbers = []
         for line in f:
+            # print line
             listWithNumbers.append(float(line))
 
         # after reading the whole file close it
@@ -47,4 +48,4 @@ def readRadiograph(landmarkId):
 
 if __name__ == '__main__':
     print "running Read Data file : \n"
-    print ReadLandmarksFromFiles(1);
+    print ReadLandmarksFromFiles(20);

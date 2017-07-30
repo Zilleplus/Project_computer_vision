@@ -50,14 +50,14 @@ class Teeth:
                    ,int(self.procrustes_data[rankCoordinates+self.numberOfPointsLandmark,rankLandmark]*1000+500)
                 )
 
-    def PCA(self):
+    def PCA(self,dim_model):
         # calculate the mean
         mean = np.zeros((80,1))
         for rankLandmark in range(0,self.numberOfLandmarks):
             mean[:,0] = mean[:,0] + (self.procrustes_data[:,rankLandmark] / 2)
 
         # execute the PCA analysis
-        #(mean , eigenvectors) = cv2.PCACompute(np.transpose(self.procrustes_data))
+        # (mean , eigenvectors) = cv2.PCACompute(np.transpose(self.procrustes_data))
 
         A = np.dot(   np.transpose(self.procrustes_data - mean) ,self.procrustes_data - mean  )
         [length_col_A,length_row_A] = A.shape
@@ -69,7 +69,12 @@ class Teeth:
         for i in range(0,length_row_A):
             eigenvectors[:,i] = eigenvectors[:,i] / np.linalg.norm(eigenvectors[:,i])
 
-        [~ numberOfEigenvectors] = np.shape(eigenvectors)
+        idx = np.argsort(-eigenvalues)
+        eigenvalues = eigenvalues[idx]
+        eigenvectors = eigenvectors[:,idx]
+
+        eigenvalues = eigenvalues[0:dim_model].copy()
+        eigenvectors = eigenvectors[:,0:dim_model].copy()
 
         # construct the final model
         return asm.ActiveShapeModel(mean,eigenvectors,eigenvalues)
